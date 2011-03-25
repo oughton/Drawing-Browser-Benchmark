@@ -1,13 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-<script type="text/javascript" src="https://github.com/malsup/form/raw/master/jquery.form.js"></script>
+<script type="text/javascript" src="js/jquery.url.min.js"></script>
+<script type="text/javascript" src="js/raphael.js"></script>
 <script type="text/javascript" src="js/browserbench.js"></script>
 </head>
 <body>
 <script type="text/javascript"> 
-
+    $(document).ready(function() {
+        var type = $.url.param("type"), particles = $.url.param("particles"), 
+            framerate = parseInt($.url.param("framerate")), test;
+        
+        if (type == "") type = "canvas";
+        if (particles == "") particles = 50;
+        if (framerate == "" || isNaN(framerate)) framerate = 100;
+        
+        switch(type) {
+            case "canvas":
+                test = canvasTest;
+                break;
+            case "svg":
+                test = svgTest;
+                break;
+        }
+        
+        GraphicTest.run($("#cont"), test, framerate, particles);
+    });
 </script>
-<div id="canvas"></div>
+<div id="cont"></div>
 </body>
 </html>
