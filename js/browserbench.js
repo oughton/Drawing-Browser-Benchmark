@@ -26,11 +26,9 @@ var GraphicTest = {
             }
 
             ctx.clearRect(0, 0, width, height);
-
             drawFunc(drawArea, width, height, numParticles, data);
-
-            ctx.save();
             
+            ctx.save();
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, width, 15);
             ctx.fillStyle = '#FFF';
@@ -45,17 +43,21 @@ var GraphicTest = {
     }
 };
 
-function Particle(paper, drawFunc, updateFunc, width, height) {
+function Particle(paper, updateFunc, width, height) {
     var _x, _y, _xDir, _yDir, _speed, _thisParticle = this;
 
-    this.x = function(val) { if (val != undefined) _x = val; else return _x; };
-    this.y = function(val) { if (val != undefined) _y = val; else return _y; };
-    this.xDir = function(val) { if (val != undefined) _xDir = val; else return _xDir; };
-    this.yDir = function(val) { if (val != undefined) _yDir = val; else return _yDir; };
-    this.speed = function() { return _speed; };
-
-    this.draw = function() { drawFunc(paper, _thisParticle); }
-    this.update = function() { updateFunc(paper, _thisParticle); }
+    this.update = function() { 
+        var x = _x, y = _y;
+        
+        // update pos and direction
+        if (_x >= width || _x <= 0) _xDir *= -1;
+        if (_y >= height || _y <= 0) _yDir *= -1;
+       
+        _x += _xDir * _speed;
+        _y += _yDir * _speed;
+    
+        updateFunc(paper, _x, _y, _x - x, _y - y, _thisParticle); 
+    }
 
     var _randomDir = function() {
         if (Math.round(Math.random()) == 1) return 1;
@@ -83,24 +85,17 @@ var canvasTest = function(container, width, height, numParticles, data) {
     if (data.particles == undefined) {
         data.particles = [];
 
-        var update = function(paper, that) {
+        var update = function(paper, x, y) {
             var ctx = paper[0].getContext("2d");
-            
-            // update pos and direction
-            if (that.x() >= width || that.x() <= 0) that.xDir(that.xDir() * -1);
-            if (that.y() >= height || that.y() <= 0) that.yDir(that.yDir() * -1);
-           
-            that.x(that.x() + that.xDir() * that.speed());
-            that.y(that.y() + that.yDir() * that.speed());
             
             // draw the particle
             ctx.fillStyle = "rgb(0,0,255)";
-            ctx.fillRect(that.x(), that.y(), 5, 5);
+            ctx.fillRect(x, y, 5, 5);
         };
 
         // create some particles
         for (var i = 0; i < numParticles; i++) {
-            data.particles.push(new Particle(data.canvas, function(){}, update, width, height));
+            data.particles.push(new Particle(data.canvas, update, width, height));
         }
     }
 
@@ -113,37 +108,23 @@ var canvasTest = function(container, width, height, numParticles, data) {
 };
 
 var svgTest = function(container, width, height, numParticles, data) {
-    var particle;
-    
     if (data.r == undefined) data.r = Raphael(container[0], width, height);
     
     if (data.particles == undefined) {
         data.particles = [];
 
-        var init = function(paper, that) {
-            that.__svgnode__ = paper.rect(that.x(), that.y(), 5, 5)
-                .attr({ "stroke-width": 0, "stroke-opacity": 0, fill: "rgb(0,0,255)" });
-        };
-
-        var update = function(paper, that) {
-            var x = that.x();
-            var y = that.y();
-            
-            // update pos and direction
-            if (that.x() >= width || that.x() <= 0) that.xDir(that.xDir() * -1);
-            if (that.y() >= height || that.y() <= 0) that.yDir(that.yDir() * -1);
-           
-            that.x(that.x() + that.xDir() * that.speed());
-            that.y(that.y() + that.yDir() * that.speed());
-        
-            that.__svgnode__.translate(that.x() - x, that.y() - y);
+        var update = function(paper, x, y, dx, dy, that) {
+            if (that.__svgnode__ == undefined) {
+                that.__svgnode__ = paper.rect(x, y, 5, 5)
+                    .attr({ "stroke-width": 0, "stroke-opacity": 0, fill: "rgb(0,0,255)" });
+            } else {
+                that.__svgnode__.translate(dx, dy);
+            }
         };
         
         // create some particles
         for (var i = 0; i < numParticles; i++) {
-            particle = new Particle(data.r, init, update, width, height);
-            particle.draw();
-            data.particles.push(particle);
+            data.particles.push(new Particle(data.r, update, width, height));
         }
     }
 
