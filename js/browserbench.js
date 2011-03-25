@@ -122,7 +122,7 @@ var svgTest = function(container, width, height, numParticles, data) {
 
         var init = function(paper, that) {
             that.__svgnode__ = paper.rect(that.x(), that.y(), 5, 5)
-                .attr({ "stroke-width": "0px", fill: "rgb(0,0,255)" });
+                .attr({ "stroke-width": 0, "stroke-opacity": 0, fill: "rgb(0,0,255)" });
         };
 
         var update = function(paper, that) {
