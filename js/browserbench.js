@@ -132,3 +132,30 @@ var svgTest = function(container, width, height, numParticles, data) {
         particle.update();
     });
 };
+
+var htmlTest = function(container, width, height, numParticles, data) {
+    if (data.h == undefined) data.h = $('<div></div>').css({ width: width, height: height, position: 'absolute' }).appendTo(container);
+    
+    if (data.particles == undefined) {
+        data.particles = [];
+
+        var update = function(paper, x, y, dx, dy, that) {
+            if (that.__divnode__ == undefined) {
+                that.__divnode__ = $('<div></div>')
+                    .css({ "position": "absolute", "background-color": "rgb(0,0,255)", "width": 5, "height": 5 })
+                    .appendTo(paper);
+            } else {
+                that.__divnode__.css({ top: y, left: x });
+            }
+        };
+        
+        // create some particles
+        for (var i = 0; i < numParticles; i++) {
+            data.particles.push(new Particle(data.h, update, width, height));
+        }
+    }
+
+    $.each(data.particles, function(index, particle) {
+        particle.update();
+    });
+};
